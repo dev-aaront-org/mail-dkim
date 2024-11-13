@@ -312,13 +312,18 @@ sub finish_body {
 
         # load the private key file if necessary
         my $signature = $algorithm->signature;
-        my $key =
-             $signature->{Key}
-          || $signature->{KeyFile}
-          || $self->{Key}
-          || $self->{KeyFile};
-        if ( defined($key) && !ref($key) ) {
-            $key = load_private_key( $key, $self->{Algorithm} );
+        my $key = $signature->{Key} || $signature->{KeyFile};
+        if ( defined($key) ) {
+            if ( !ref($key) ) {
+                $key = load_private_key( $key, $signature->algorithm );
+            }
+        }
+        else {
+            $key = $self->{Key} || $self->{KeyFile};
+            if ( defined($key) && !ref($key) ) {
+                $key = load_private_key( $key, $self->{Algorithm} );
+                $self->{Key} = $key;
+            }
         }
         $key
           or die "no key available to sign with\n";
